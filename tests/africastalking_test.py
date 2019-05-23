@@ -6,10 +6,11 @@ from smsframework import Gateway, OutgoingMessage
 from smsframework_africastalking import AfricasTalkingProvider
 from smsframework_africastalking.error import AfricasTalkingProviderError
 
+
 def _mock_response(status_code, msg_response):
     """
     Decorator function to handle mocking responses to API calls
-    
+
     :param status_code: (int) Mocked response status code
     :param msg_response: (dict) Mocked message response details
     """
@@ -21,7 +22,8 @@ def _mock_response(status_code, msg_response):
                 }
             }
             with requests_mock.mock() as mocker:
-                mocker.post('https://api.sandbox.africastalking.com/version1/messaging',
+                mocker.post(
+                    'https://api.sandbox.africastalking.com/version1/messaging',
                     headers={'content-type': 'application/json'},
                     status_code=status_code,
                     json=response
@@ -30,11 +32,14 @@ def _mock_response(status_code, msg_response):
         return wrapper
     return decorator
 
+
 class AfricasTalkingProviderTest(unittest.TestCase):
     def setUp(self):
         """Initialize AfricasTalkingProvider"""
         self.gw = gw = Gateway()
-        gw.add_provider('africas_talking', AfricasTalkingProvider,
+        gw.add_provider(
+            'africas_talking',
+            AfricasTalkingProvider,
             username='sandbox',
             api_key='api_key'
         )
@@ -42,7 +47,9 @@ class AfricasTalkingProviderTest(unittest.TestCase):
     @_mock_response(200, {'status': 'Success', 'messageId': '001'})
     def test_send_success(self):
         """Test a successful AfricasTalking SMS send"""
-        message_out = OutgoingMessage('+254789789789', 'Hello Kenya',
+        message_out = OutgoingMessage(
+            '+254789789789',
+            'Hello Kenya',
             provider='africas_talking'
         ).params(
             target_country='KE'
@@ -52,7 +59,16 @@ class AfricasTalkingProviderTest(unittest.TestCase):
 
     @_mock_response(400, {'status': 'Failed'})
     def test_send_failure(self):
-        message_out = OutgoingMessage('+254789789789', 'Hello Kenya',
+        """Test a failing AfricasTalking SMS send"""
+        message_out = OutgoingMessage(
+            '+254789789789',
+            'Hello Kenya',
             provider='africas_talking'
+        ).params(
+            target_country='KE'
         )
-        self.assertRaises(AfricasTalkingProviderError, self.gw.send, message_out)
+        self.assertRaises(
+            AfricasTalkingProviderError,
+            self.gw.send,
+            message_out
+        )
