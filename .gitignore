@@ -1,3 +1,8 @@
+build
+dist
 __pycache__
+smsframework_africastalking.egg-info
+.tox
 .vscode
 venv
+*.pyc
