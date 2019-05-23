@@ -38,3 +38,7 @@ message = OutgoingMessage('+254789789789', 'Hello Kenya').params(target_country=
 
 gateway.send(message)
 ```
+
+# Additional Information
+
+AfricasTalking SMS API also supports sending premium messages and receiving incoming messages. These features are not currently implemented in this provider.
