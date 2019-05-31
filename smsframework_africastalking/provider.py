@@ -1,10 +1,11 @@
 import logging
+import json
 
 import africastalking
 import phonenumbers
 from smsframework import IProvider
 
-from .error import AfricasTalkingProviderError
+from .error import AfricasTalkingProviderError, InvalidNumberError
 
 
 class AfricasTalkingProvider(IProvider):
@@ -56,7 +57,7 @@ class AfricasTalkingProvider(IProvider):
             logging.info(
                 'AFRICAS_TALKING SMS TO NUM ENDING ...%s FAILED' % (num_ending)
             )
-            raise AfricasTalkingProviderError('PHONE_NUMBER_PARSE_ERROR')
+            raise InvalidNumberError(message.dst, 'Unable to Parse Number')
 
         try:
             api_response = self.sms_client.send(
@@ -64,17 +65,20 @@ class AfricasTalkingProvider(IProvider):
                 [formatted_number],
                 message.provider_options.senderId
             )
+        except Exception as e:
+            error = json.loads(e.args[0])
+            error_status = error['SMSMessageData']['Recipients'][0]['status']
 
-            sent_message = api_response['SMSMessageData']['Recipients'][0]
-
-            if sent_message['status'] != 'Success':
-                raise Exception
-        except:
-            logging.info(
+            logging.error(
                 'AFRICAS_TALKING SMS TO NUM ENDING ...%s FAILED' % (num_ending)
             )
-            raise AfricasTalkingProviderError('API_ERROR')
 
+            if error_status == 'InvalidPhoneNumber':
+                raise InvalidNumberError(formatted_number)
+            else:
+                raise AfricasTalkingProviderError(error_status)
+
+        sent_message = api_response['SMSMessageData']['Recipients'][0]
         message.msgid = sent_message['messageId']
 
         logging.info(
