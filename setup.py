@@ -8,7 +8,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='smsframework-africastalking',
-    version='1.0.0',
+    version='1.0.1',
     author='BBOXX',
     author_email='j.lynch@bboxx.co.uk',
     description='SMS framework: Africa\'s Talking provider',

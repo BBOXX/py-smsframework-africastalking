@@ -4,7 +4,7 @@ import requests_mock
 from smsframework import Gateway, OutgoingMessage
 
 from smsframework_africastalking import AfricasTalkingProvider
-from smsframework_africastalking.error import AfricasTalkingProviderError
+from smsframework_africastalking.error import AfricasTalkingProviderError, InvalidNumberError
 
 
 def _mock_response(status_code, msg_response):
@@ -57,7 +57,7 @@ class AfricasTalkingProviderTest(unittest.TestCase):
         message_back = self.gw.send(message_out)
         self.assertEqual(message_back.msgid, '001')
 
-    @_mock_response(400, {'status': 'Failed'})
+    @_mock_response(500, {'status': 'Failed'})
     def test_send_failure(self):
         """Test a failing AfricasTalking SMS send"""
         message_out = OutgoingMessage(
@@ -69,6 +69,22 @@ class AfricasTalkingProviderTest(unittest.TestCase):
         )
         self.assertRaises(
             AfricasTalkingProviderError,
+            self.gw.send,
+            message_out
+        )
+
+    @_mock_response(403, {'status': 'InvalidPhoneNumber'})
+    def test_bad_number_failure(self):
+        """Test a failing AfricasTalking SMS send (bad phone number)"""
+        message_out = OutgoingMessage(
+            '+254789789789',
+            'Hello Rwanda',
+            provider='africas_talking'
+        ).params(
+            target_country='RW'
+        )
+        self.assertRaises(
+            InvalidNumberError,
             self.gw.send,
             message_out
         )
