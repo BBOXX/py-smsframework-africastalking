@@ -43,21 +43,33 @@ class AfricasTalkingProvider(IProvider):
             'AFRICAS_TALKING SENDING SMS TO NUM ENDING ...%s' % (num_ending)
         )
 
+        target_country = message.provider_params['target_country']
+
         try:
-            phone_number = phonenumbers.parse(
+            phone_number = phonenumbers.parse(message.dst, target_country)
+        except:
+            raise InvalidNumberError(message.dst, 'Unable to Parse Number')
+
+        number_is_valid = phonenumbers.is_valid_number_for_region(
+            phone_number, target_country
+        )
+        if number_is_valid is False:
+            raise InvalidNumberError(
                 message.dst,
-                message.provider_params['target_country']
+                'Invalid Phone Number for Target Country',
+                target_country=target_country
             )
 
+        try:
             formatted_number = phonenumbers.format_number(
                 phone_number,
                 phonenumbers.PhoneNumberFormat.E164
             )
         except:
-            logging.info(
-                'AFRICAS_TALKING SMS TO NUM ENDING ...%s FAILED' % (num_ending)
+            InvalidNumberError(
+                message.dst,
+                'Unable to Parse Phone Number'
             )
-            raise InvalidNumberError(message.dst, 'Unable to Parse Number')
 
         try:
             api_response = self.sms_client.send(
