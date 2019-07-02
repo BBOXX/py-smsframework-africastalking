@@ -37,11 +37,7 @@ class AfricasTalkingProvider(IProvider):
          msgid.
         """
 
-        num_ending = message.dst[-3:]
-
-        logging.info(
-            'AFRICAS_TALKING SENDING SMS TO NUM ENDING ...%s' % (num_ending)
-        )
+        logging.debug('smsframework africastalking sending sms')
 
         target_country = message.provider_params['target_country']
 
@@ -81,9 +77,7 @@ class AfricasTalkingProvider(IProvider):
             error = json.loads(e.args[0])
             error_status = error['SMSMessageData']['Recipients'][0]['status']
 
-            logging.error(
-                'AFRICAS_TALKING SMS TO NUM ENDING ...%s FAILED' % (num_ending)
-            )
+            logging.error('smsframework africastalking sms failed')
 
             if error_status == 'InvalidPhoneNumber':
                 raise InvalidNumberError(formatted_number)
@@ -92,9 +86,5 @@ class AfricasTalkingProvider(IProvider):
 
         sent_message = api_response['SMSMessageData']['Recipients'][0]
         message.msgid = sent_message['messageId']
-
-        logging.info(
-            'AFRICAS_TALKING SMS TO NUM ENDING ...%s SENT' % (num_ending)
-        )
 
         return message
